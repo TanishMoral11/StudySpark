@@ -17,6 +17,7 @@ export function useGenerate() {
     const trimmedNotes = notes.trim();
     if (!trimmedNotes) {
       setError('Please enter study notes or an academic topic.');
+      setStudySet(null);
       return;
     }
 
@@ -32,6 +33,7 @@ export function useGenerate() {
 
     setLoading(true);
     setError(null);
+    setStudySet(null); // Hide previous results during generation & on error
 
     try {
       const response = await fetch('/api/generate', {
@@ -75,6 +77,7 @@ export function useGenerate() {
       if ('status' in validatedResult && validatedResult.status === 'invalid_input') {
         if (currentRequestId === requestIdRef.current) {
           setError(validatedResult.message);
+          setStudySet(null);
         }
         return;
       }
@@ -92,9 +95,11 @@ export function useGenerate() {
         }
         if (currentRequestId === requestIdRef.current) {
           setError(err.message || 'Couldn\'t generate study material. Check your connection.');
+          setStudySet(null);
         }
       } else if (currentRequestId === requestIdRef.current) {
         setError('An unexpected error occurred. Please try again.');
+        setStudySet(null);
       }
     } finally {
       if (currentRequestId === requestIdRef.current) {
