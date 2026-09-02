@@ -7,6 +7,8 @@ interface InputPanelProps {
   loading: boolean;
 }
 
+const MAX_CHARS = 25000;
+
 const EXAMPLE_PROMPTS = [
   "DBMS",
   "Operating Systems",
@@ -20,8 +22,9 @@ export const InputPanel: React.FC<InputPanelProps> = ({
   onGenerate,
   loading,
 }) => {
-  const isValid = notes.trim().length > 0;
   const charCount = notes.length;
+  const isExceeded = charCount > MAX_CHARS;
+  const isValid = notes.trim().length > 0 && !isExceeded;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -59,15 +62,33 @@ export const InputPanel: React.FC<InputPanelProps> = ({
           disabled={loading}
           placeholder="Enter study notes or topic (e.g. DBMS, Binary Tree, Operating Systems)..."
           rows={4}
-          className="w-full bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700/60 rounded-xl p-4 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm md:text-base leading-relaxed resize-y min-h-[120px]"
+          className={`w-full bg-white dark:bg-slate-900/60 border rounded-xl p-4 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm md:text-base leading-relaxed resize-y min-h-[120px] ${
+            isExceeded
+              ? 'border-rose-500 dark:border-rose-500 ring-1 ring-rose-500/50'
+              : 'border-slate-300 dark:border-slate-700/60'
+          }`}
         />
       </div>
 
-      <div className="flex items-center justify-between mt-2 text-xs">
-        <span className={isValid ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-slate-400"}>
-          {charCount} characters {isValid ? '✓' : ''}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mt-2 text-xs">
+        <span
+          className={`font-medium ${
+            isExceeded
+              ? 'text-rose-600 dark:text-rose-400 font-semibold'
+              : isValid
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : 'text-slate-500 dark:text-slate-400'
+          }`}
+        >
+          {isExceeded ? (
+            <span>⚠️ Input limit exceeded ({charCount.toLocaleString()} / {MAX_CHARS.toLocaleString()}). Please reduce your input length.</span>
+          ) : (
+            <span>
+              {charCount.toLocaleString()} / {MAX_CHARS.toLocaleString()} characters {isValid ? '✓' : ''}
+            </span>
+          )}
         </span>
-        <span className="text-slate-500 dark:text-slate-500 hidden sm:inline">Press Ctrl+Enter to generate</span>
+        <span className="text-slate-500 dark:text-slate-500 hidden sm:inline shrink-0">Press Ctrl+Enter to generate</span>
       </div>
 
       {/* Example Prompt Chips */}
