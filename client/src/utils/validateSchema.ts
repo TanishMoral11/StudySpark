@@ -1,15 +1,27 @@
-import type { StudySet, Flashcard, QuizQuestion } from '../types/study';
+import type { StudySet, Flashcard, QuizQuestion, InvalidInputResponse, GenerateAPIResponse } from '../types/study';
 
 /**
- * Validates that an arbitrary object conforms to the StudySet schema and business rules.
+ * Validates that an arbitrary object conforms to GenerateAPIResponse (StudySet or InvalidInputResponse).
  */
-export function validateStudySet(data: unknown): StudySet {
+export function validateResponseData(data: unknown): GenerateAPIResponse {
   if (!data || typeof data !== 'object') {
     throw new Error('AI returned invalid data format');
   }
 
   const obj = data as Record<string, unknown>;
 
+  // Case 1: Invalid input response from backend
+  if (obj.status === 'invalid_input') {
+    if (typeof obj.message !== 'string' || !obj.message.trim()) {
+      throw new Error('Invalid input error message is missing');
+    }
+    return {
+      status: 'invalid_input',
+      message: obj.message.trim(),
+    } as InvalidInputResponse;
+  }
+
+  // Case 2: Standard StudySet response
   if (typeof obj.title !== 'string' || obj.title.trim().length === 0) {
     throw new Error('Study set title is missing or empty');
   }
@@ -81,4 +93,12 @@ export function validateStudySet(data: unknown): StudySet {
     flashcards: validatedCards,
     quiz: validatedQuiz,
   };
+}
+
+export function validateStudySet(data: unknown): StudySet {
+  const result = validateResponseData(data);
+  if ('status' in result && result.status === 'invalid_input') {
+    throw new Error(result.message);
+  }
+  return result as StudySet;
 }

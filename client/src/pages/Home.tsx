@@ -30,10 +30,14 @@ export const Home: React.FC = () => {
 
   useEffect(() => {
     localStorage.setItem('studyspark_theme', theme);
-    if (theme === 'light') {
-      document.body.classList.add('light');
+    const root = document.documentElement;
+    const body = document.body;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      body.classList.add('dark');
     } else {
-      document.body.classList.remove('light');
+      root.classList.remove('dark');
+      body.classList.remove('dark');
     }
   }, [theme]);
 
@@ -87,11 +91,6 @@ export const Home: React.FC = () => {
   }, [studySet]);
 
   // Flashcard Navigation
-  const goToCard = (index: number) => {
-    setIsFlipped(false);
-    setCurrentCard(index);
-  };
-
   const nextCard = () => {
     if (!studySet) return;
     setIsFlipped(false);
@@ -213,29 +212,30 @@ export const Home: React.FC = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-8 md:py-12">
-      {/* Top Bar with Theme Toggle */}
+      {/* Top Bar with Icon-Only Theme Toggle */}
       <div className="flex justify-between items-center mb-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-700/50 text-indigo-300 text-xs font-semibold shadow-sm">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-700/50 text-indigo-700 dark:text-indigo-300 text-xs font-semibold shadow-sm">
           <span>⚡ AI Study Assistant</span>
         </div>
 
-        {/* Theme Change Option */}
+        {/* Icon-Only Theme Toggle Button */}
         <button
           type="button"
           onClick={toggleTheme}
-          aria-label="Toggle theme"
-          className="px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all bg-slate-900/80 border-slate-700 text-slate-200 hover:bg-slate-800"
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="w-10 h-10 rounded-xl border flex items-center justify-center text-lg transition-all bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700 text-amber-500 dark:text-amber-400 hover:scale-105 active:scale-95 shadow-sm"
         >
-          <span>{theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
+          <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
         </button>
       </div>
 
       {/* App Header */}
       <header className="text-center mb-8">
-        <h1 className="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-100 via-indigo-200 to-purple-200 tracking-tight">
+        <h1 className="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-indigo-900 to-purple-900 dark:from-slate-100 dark:via-indigo-200 dark:to-purple-200 tracking-tight">
           StudySpark
         </h1>
-        <p className="text-sm md:text-base text-slate-400 max-w-md mx-auto mt-2 leading-relaxed">
+        <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 max-w-md mx-auto mt-2 leading-relaxed">
           Convert free-form notes into structured flashcards and interactive quizzes instantly.
         </p>
       </header>
@@ -263,32 +263,32 @@ export const Home: React.FC = () => {
       {studySet && !loading && (
         <section className="w-full animate-fadeIn">
           {/* Study Set Header */}
-          <div className="glass-card rounded-2xl p-5 md:p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-slate-800">
+          <div className="glass-card rounded-2xl p-5 md:p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl md:text-2xl font-bold text-slate-100">
+                <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">
                   {studySet.title}
                 </h2>
                 {retestMode && (
-                  <span className="text-xs bg-amber-950/80 border border-amber-700/60 text-amber-300 px-2.5 py-0.5 rounded-full font-medium">
+                  <span className="text-xs bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700/60 text-amber-800 dark:text-amber-300 px-2.5 py-0.5 rounded-full font-medium">
                     Retest Mode
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {studySet.flashcards.length} Flashcards • {studySet.quiz.length} Quiz Questions
               </p>
             </div>
 
             {/* View Mode Tabs */}
-            <div className="flex bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 self-start sm:self-auto">
+            <div className="flex bg-slate-200/80 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-300 dark:border-slate-800 self-start sm:self-auto">
               <button
                 type="button"
                 onClick={() => setViewMode('flashcards')}
                 className={`px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all flex items-center gap-2 ${
                   viewMode === 'flashcards'
                     ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-slate-200'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
                 <span>🎴 Flashcards</span>
@@ -299,7 +299,7 @@ export const Home: React.FC = () => {
                 className={`px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all flex items-center gap-2 ${
                   viewMode === 'quiz'
                     ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-slate-200'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
                 <span>🎯 Quiz</span>
@@ -316,25 +316,6 @@ export const Home: React.FC = () => {
                 label="Flashcard Progress"
               />
 
-              {/* Numbered Tabs Bar for Flashcards (1 | 2 | ... | N) */}
-              <div className="mb-4 flex items-center justify-center flex-wrap gap-1.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800/80">
-                <span className="text-xs text-slate-400 font-medium mr-2">Cards:</span>
-                {studySet.flashcards.map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => goToCard(idx)}
-                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center ${
-                      currentCard === idx
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md scale-105'
-                        : 'bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/40'
-                    }`}
-                  >
-                    {idx + 1}
-                  </button>
-                ))}
-              </div>
-
               <Flashcard
                 question={studySet.flashcards[currentCard].question}
                 answer={studySet.flashcards[currentCard].answer}
@@ -347,19 +328,19 @@ export const Home: React.FC = () => {
                 <button
                   type="button"
                   onClick={prevCard}
-                  className="px-5 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-slate-200 text-sm font-semibold transition-all flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-sm font-semibold transition-all flex items-center gap-2 shadow-sm"
                 >
                   <span>← Previous</span>
                 </button>
 
-                <span className="text-xs font-semibold text-slate-400">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
                   Card {currentCard + 1} of {studySet.flashcards.length}
                 </span>
 
                 <button
                   type="button"
                   onClick={nextCard}
-                  className="px-5 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-slate-200 text-sm font-semibold transition-all flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-sm font-semibold transition-all flex items-center gap-2 shadow-sm"
                 >
                   <span>Next →</span>
                 </button>
@@ -395,16 +376,16 @@ export const Home: React.FC = () => {
                 </>
               ) : (
                 /* Quiz Complete Score Card */
-                <div className="glass-card rounded-2xl p-8 md:p-12 text-center border border-slate-800 shadow-2xl">
+                <div className="glass-card rounded-2xl p-8 md:p-12 text-center shadow-2xl">
                   <div className="w-20 h-20 bg-indigo-500/10 border border-indigo-500/30 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
                     🏆
                   </div>
 
-                  <h3 className="text-2xl md:text-3xl font-bold text-slate-100 mb-2">
+                  <h3 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
                     Quiz Complete!
                   </h3>
 
-                  <p className="text-lg font-semibold text-indigo-300 mb-6">
+                  <p className="text-lg font-semibold text-indigo-700 dark:text-indigo-300 mb-6">
                     {score} / {totalQuizQuestions} Correct ({Math.round((score / totalQuizQuestions) * 100)}%)
                   </p>
 
@@ -432,7 +413,7 @@ export const Home: React.FC = () => {
                           completed: false,
                         });
                       }}
-                      className="px-6 py-3 rounded-xl font-semibold text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all"
+                      className="px-6 py-3 rounded-xl font-semibold text-sm bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition-all"
                     >
                       Restart Entire Quiz
                     </button>
@@ -446,15 +427,15 @@ export const Home: React.FC = () => {
 
       {/* Resume Previous Session Modal */}
       {showResumeModal && savedSession && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="glass-card rounded-2xl p-6 md:p-8 max-w-md w-full border border-indigo-500/30 shadow-2xl animate-fadeIn">
-            <h3 className="text-xl font-bold text-slate-100 mb-2 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-2">
               <span>📂</span> Resume Previous Session?
             </h3>
-            <p className="text-sm text-slate-300 mb-1">
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-1">
               You have a saved study session:
             </p>
-            <p className="text-base font-semibold text-indigo-300 mb-4 bg-indigo-950/40 p-3 rounded-xl border border-indigo-800/40">
+            <p className="text-base font-semibold text-indigo-700 dark:text-indigo-300 mb-4 bg-indigo-50 dark:bg-indigo-950/40 p-3 rounded-xl border border-indigo-200 dark:border-indigo-800/40">
               "{savedSession.title}"
             </p>
 
@@ -462,14 +443,14 @@ export const Home: React.FC = () => {
               <button
                 type="button"
                 onClick={handleResumeSession}
-                className="flex-1 py-2.5 px-4 rounded-xl font-semibold text-xs md:text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition-all"
+                className="flex-1 py-2.5 px-4 rounded-xl font-semibold text-xs md:text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-md"
               >
                 Resume Session
               </button>
               <button
                 type="button"
                 onClick={handleDeleteSession}
-                className="py-2.5 px-4 rounded-xl font-semibold text-xs md:text-sm bg-slate-800 hover:bg-rose-950/60 hover:text-rose-300 border border-slate-700 text-slate-400 transition-all"
+                className="py-2.5 px-4 rounded-xl font-semibold text-xs md:text-sm bg-slate-200 dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-950/60 text-slate-700 dark:text-slate-400 hover:text-rose-700 dark:hover:text-rose-300 border border-slate-300 dark:border-slate-700 transition-all"
               >
                 Delete
               </button>

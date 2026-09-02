@@ -18,6 +18,13 @@ export interface StudySet {
   quiz: QuizQuestion[];
 }
 
+export interface InvalidInputResponse {
+  status: 'invalid_input';
+  message: string;
+}
+
+export type GenerateAPIResponse = StudySet | InvalidInputResponse;
+
 export type ViewMode = 'flashcards' | 'quiz';
 
 export interface QuizAnswerState {

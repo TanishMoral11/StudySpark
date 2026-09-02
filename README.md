@@ -60,7 +60,7 @@ Create a `.env` file inside the `server/` directory:
 
 ```bash
 # inside server/.env
-PORT=3001
+PORT=8000
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
@@ -73,8 +73,8 @@ npm run dev
 ```
 
 This starts:
-- Express Backend on `http://localhost:3001`
-- Vite React Frontend on `http://localhost:5173`
+- Express Backend on `http://localhost:8000`
+- Vite React Frontend on `http://localhost:3000`
 
 ---
 

@@ -8,9 +8,10 @@ interface InputPanelProps {
 }
 
 const EXAMPLE_PROMPTS = [
-  "Operating Systems: Deadlock, Mutex, Semaphore, Banker's Algorithm, Page Faults",
-  "Data Structures: Binary Search Trees, AVL Trees, Hash Tables, Graph Traversal",
-  "Machine Learning: Supervised vs Unsupervised, Gradient Descent, Overfitting, Hyperparameters",
+  "DBMS",
+  "Operating Systems",
+  "Binary Tree",
+  "Photosynthesis & Plant Biology",
 ];
 
 export const InputPanel: React.FC<InputPanelProps> = ({
@@ -19,9 +20,8 @@ export const InputPanel: React.FC<InputPanelProps> = ({
   onGenerate,
   loading,
 }) => {
-  const minChars = 30;
+  const isValid = notes.trim().length > 0;
   const charCount = notes.length;
-  const isValid = charCount >= minChars;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -35,15 +35,15 @@ export const InputPanel: React.FC<InputPanelProps> = ({
   return (
     <div className="w-full glass-card rounded-2xl p-5 md:p-6 mb-8 transition-all">
       <div className="flex items-center justify-between mb-3">
-        <label htmlFor="notes-input" className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-          <span>📝</span> Study Notes / Topic
+        <label htmlFor="notes-input" className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+          <span>📝</span> Study Notes or Academic Topic
         </label>
         {notes && (
           <button
             type="button"
             onClick={() => onNotesChange('')}
             disabled={loading}
-            className="text-xs text-slate-400 hover:text-rose-400 transition-colors px-2 py-1 rounded bg-slate-800/50"
+            className="text-xs text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors px-2 py-1 rounded bg-slate-200/80 dark:bg-slate-800/50"
           >
             Clear text
           </button>
@@ -57,22 +57,22 @@ export const InputPanel: React.FC<InputPanelProps> = ({
           onChange={(e) => onNotesChange(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={loading}
-          placeholder="Paste your notes here... (min 30 characters)&#10;&#10;Example: Deadlock, Mutex, Semaphore, Banker's Algorithm..."
-          rows={5}
-          className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl p-4 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm md:text-base leading-relaxed resize-y min-h-[140px]"
+          placeholder="Enter study notes or topic (e.g. DBMS, Binary Tree, Operating Systems)..."
+          rows={4}
+          className="w-full bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700/60 rounded-xl p-4 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm md:text-base leading-relaxed resize-y min-h-[120px]"
         />
       </div>
 
       <div className="flex items-center justify-between mt-2 text-xs">
-        <span className={isValid ? "text-emerald-400 font-medium" : "text-amber-400/90"}>
-          {charCount} / {minChars} min characters {isValid ? '✓' : ''}
+        <span className={isValid ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-slate-400"}>
+          {charCount} characters {isValid ? '✓' : ''}
         </span>
-        <span className="text-slate-500 hidden sm:inline">Press Ctrl+Enter to generate</span>
+        <span className="text-slate-500 dark:text-slate-500 hidden sm:inline">Press Ctrl+Enter to generate</span>
       </div>
 
       {/* Example Prompt Chips */}
-      <div className="mt-4 pt-4 border-t border-slate-800/60">
-        <p className="text-xs font-medium text-slate-400 mb-2">Try an example topic:</p>
+      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800/60">
+        <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Try an example topic:</p>
         <div className="flex flex-wrap gap-2">
           {EXAMPLE_PROMPTS.map((prompt, idx) => (
             <button
@@ -80,7 +80,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
               type="button"
               disabled={loading}
               onClick={() => onNotesChange(prompt)}
-              className="text-xs bg-indigo-950/40 hover:bg-indigo-900/60 text-indigo-300 border border-indigo-800/40 rounded-lg px-3 py-1.5 transition-all text-left truncate max-w-full"
+              className="text-xs bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40 rounded-lg px-3 py-1.5 transition-all text-left truncate max-w-full font-medium"
             >
               💡 {prompt}
             </button>
@@ -95,7 +95,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
         disabled={!isValid || loading}
         className={`w-full mt-5 py-3.5 px-6 rounded-xl font-semibold text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
           !isValid || loading
-            ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/40'
+            ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-300 dark:border-slate-700/40'
             : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 active:scale-[0.99] shadow-indigo-500/20'
         }`}
       >

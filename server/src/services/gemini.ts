@@ -7,7 +7,6 @@ export async function generateStudySetRaw(notes: string): Promise<string> {
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  // Using Gemini 2.5 Flash model as per spec
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.5-flash',
     generationConfig: {
@@ -17,41 +16,46 @@ export async function generateStudySetRaw(notes: string): Promise<string> {
   });
 
   const prompt = `You are an educational assistant.
-Convert the user's notes into study material.
-Return ONLY valid JSON matching the exact schema specified below.
+Analyze the user's input. The input can be full study notes or a short study topic (e.g., "DBMS", "Binary Tree", "Operating Systems", "Photosynthesis").
 
-Schema:
-{
- "title": "A short, descriptive title based on the notes",
- "flashcards": [
+RULES FOR EVALUATING INPUT:
+1. IF the input is a valid academic topic, educational subject, lecture notes, or study concept (even if it is short, e.g. "DBMS", "Binary Tree", "Electricity"):
+   Return ONLY valid JSON matching this schema:
    {
-     "id": "fc-1",
-     "question": "Clear question",
-     "answer": "Comprehensive answer"
+     "title": "A short, descriptive title based on the topic/notes",
+     "flashcards": [
+       {
+         "id": "fc-1",
+         "question": "Clear question",
+         "answer": "Comprehensive answer"
+       }
+     ],
+     "quiz": [
+       {
+         "id": "q-1",
+         "question": "Question text",
+         "options": ["Option A", "Option B", "Option C", "Option D"],
+         "correctIndex": 0,
+         "explanation": "Why this option is correct"
+       }
+     ]
    }
- ],
- "quiz": [
+   - Generate EXACTLY 10 flashcards
+   - Generate EXACTLY 10 quiz questions
+   - Exactly 4 options per question
+   - correctIndex must be 0, 1, 2, or 3
+   - Every ID must be unique
+
+2. IF the input is casual conversation, greetings, meaningless text, gibberish, or completely non-academic content (examples: "hi", "hello", "how are you", "asdf", "asdfgh", "test", "1234"):
+   Return EXACTLY this JSON shape:
    {
-     "id": "q-1",
-     "question": "Question text",
-     "options": ["Option A", "Option B", "Option C", "Option D"],
-     "correctIndex": 0,
-     "explanation": "Why this option is correct"
+     "status": "invalid_input",
+     "message": "Please enter study notes or an academic topic."
    }
- ]
-}
 
-Rules:
-- No markdown
-- No code fences
-- No extra text
-- Exactly 10 flashcards
-- Exactly 10 quiz questions
-- Exactly 4 options for each quiz question
-- correctIndex must be an integer between 0 and 3
-- Every ID must be unique
+3. NO MARKDOWN, NO CODE FENCES, NO EXTRA TEXT. RETURN ONLY THE JSON OBJECT.
 
-User's study notes:
+User Input:
 ${notes}`;
 
   const result = await model.generateContent(prompt);

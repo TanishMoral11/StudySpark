@@ -28,8 +28,8 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   const isCorrect = selectedOption === correctIndex;
 
   return (
-    <div className="w-full glass-card rounded-2xl p-6 md:p-8 border border-slate-800 shadow-xl">
-      <h3 className="text-lg md:text-xl font-semibold text-slate-100 mb-6 leading-relaxed">
+    <div className="w-full glass-card rounded-2xl p-6 md:p-8 shadow-xl">
+      <h3 className="text-lg md:text-xl font-semibold text-slate-900 dark:text-slate-100 mb-6 leading-relaxed">
         {question}
       </h3>
 
@@ -39,17 +39,17 @@ export const QuizCard: React.FC<QuizCardProps> = ({
           const isSelected = selectedOption === idx;
           const isThisCorrect = idx === correctIndex;
 
-          let btnStyle = 'border-slate-700/60 bg-slate-900/60 text-slate-200 hover:bg-slate-800/80 hover:border-slate-600';
+          let btnStyle = 'border-slate-300 dark:border-slate-700/60 bg-slate-100/80 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-800/80 hover:border-slate-400 dark:hover:border-slate-600';
 
           if (isSelected && !submitted) {
-            btnStyle = 'border-indigo-500 bg-indigo-950/60 text-indigo-100 ring-2 ring-indigo-500/50';
+            btnStyle = 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-950 dark:text-indigo-100 ring-2 ring-indigo-500/50';
           } else if (submitted) {
             if (isThisCorrect) {
-              btnStyle = 'border-emerald-500 bg-emerald-950/60 text-emerald-100 ring-2 ring-emerald-500/50';
+              btnStyle = 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-100 ring-2 ring-emerald-500/50';
             } else if (isSelected && !isCorrect) {
-              btnStyle = 'border-rose-500 bg-rose-950/60 text-rose-100 ring-2 ring-rose-500/50';
+              btnStyle = 'border-rose-500 bg-rose-50 dark:bg-rose-950/60 text-rose-950 dark:text-rose-100 ring-2 ring-rose-500/50';
             } else {
-              btnStyle = 'border-slate-800 bg-slate-900/30 text-slate-500 opacity-60';
+              btnStyle = 'border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/30 text-slate-400 dark:text-slate-500 opacity-60';
             }
           }
 
@@ -63,12 +63,12 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             >
               <span className={`w-6 h-6 rounded-full border text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 ${
                 submitted && isThisCorrect
-                  ? 'border-emerald-400 bg-emerald-500 text-slate-950'
+                  ? 'border-emerald-500 bg-emerald-500 text-white dark:text-slate-950'
                   : submitted && isSelected && !isCorrect
-                  ? 'border-rose-400 bg-rose-500 text-white'
+                  ? 'border-rose-500 bg-rose-500 text-white'
                   : isSelected
-                  ? 'border-indigo-400 bg-indigo-500 text-white'
-                  : 'border-slate-600 bg-slate-800 text-slate-400'
+                  ? 'border-indigo-500 bg-indigo-500 text-white'
+                  : 'border-slate-400 dark:border-slate-600 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
               }`}>
                 {submitted && isThisCorrect ? '✓' : submitted && isSelected && !isCorrect ? '✕' : String.fromCharCode(65 + idx)}
               </span>
@@ -85,8 +85,8 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       {submitted && (
         <div className={`p-4 rounded-xl mb-6 border ${
           isCorrect
-            ? 'bg-emerald-950/40 border-emerald-800/50 text-emerald-200'
-            : 'bg-rose-950/40 border-rose-800/50 text-rose-200'
+            ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800/50 text-emerald-900 dark:text-emerald-200'
+            : 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800/50 text-rose-900 dark:text-rose-200'
         }`}>
           <div className="flex items-center gap-2 font-semibold text-sm mb-1">
             <span>{isCorrect ? '🎉 Correct!' : '❌ Incorrect'}</span>
@@ -106,7 +106,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             onClick={onSubmit}
             className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all ${
               selectedOption === null
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/40'
+                ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-300 dark:border-slate-700/40'
                 : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30'
             }`}
           >

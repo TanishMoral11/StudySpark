@@ -20,4 +20,16 @@ export const StudySetSchema = z.object({
   quiz: z.array(QuizQuestionSchema).min(5).max(10),
 });
 
+export const InvalidInputSchema = z.object({
+  status: z.literal('invalid_input'),
+  message: z.string().min(1),
+});
+
+export const GenerateResponseSchema = z.union([
+  StudySetSchema,
+  InvalidInputSchema,
+]);
+
 export type StudySetInput = z.infer<typeof StudySetSchema>;
+export type InvalidInputType = z.infer<typeof InvalidInputSchema>;
+export type GenerateResponseType = z.infer<typeof GenerateResponseSchema>;

@@ -6,7 +6,7 @@ import { generateRouter } from './routes/generate';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json({ limit: '100kb' }));

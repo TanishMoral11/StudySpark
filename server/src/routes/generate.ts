@@ -1,10 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { generateStudySetRaw } from '../services/gemini';
-import { StudySetSchema } from '../schema/studySchema';
+import { GenerateResponseSchema } from '../schema/studySchema';
 
 export const generateRouter = Router();
 
-// Robust helper to strip markdown code blocks and extract JSON object
 function parseJSONFromLLM(raw: string): unknown {
   const trimmed = raw.trim();
 
@@ -43,8 +42,11 @@ generateRouter.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const { notes } = req.body;
 
-    if (!notes || typeof notes !== 'string' || notes.trim().length < 30) {
-      res.status(400).json({ error: 'Notes must be at least 30 characters long.' });
+    if (!notes || typeof notes !== 'string' || notes.trim() === '') {
+      res.status(400).json({
+        status: 'invalid_input',
+        message: 'Please enter study notes or an academic topic.',
+      });
       return;
     }
 
@@ -54,7 +56,9 @@ generateRouter.post('/', async (req: Request, res: Response): Promise<void> => {
       rawResult = await generateStudySetRaw(notes.trim());
     } catch (err: unknown) {
       console.error('Gemini API Error:', err);
-      res.status(500).json({ error: "Couldn't generate study material. Check your connection or API key." });
+      res.status(500).json({
+        error: "Couldn't generate study material. Check your connection or API key.",
+      });
       return;
     }
 
@@ -68,8 +72,8 @@ generateRouter.post('/', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Step 3: Validate against Zod Schema
-    const validationResult = StudySetSchema.safeParse(jsonObject);
+    // Step 3: Validate against Zod Schema (Handles both StudySet & InvalidInput)
+    const validationResult = GenerateResponseSchema.safeParse(jsonObject);
     if (!validationResult.success) {
       console.error('Zod Validation Error:', validationResult.error.format());
       res.status(500).json({ error: 'AI returned invalid data structure. Please retry.' });

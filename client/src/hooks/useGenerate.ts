@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { StudySet } from '../types/study';
 import { extractJSON } from '../utils/parseJSON';
-import { validateStudySet } from '../utils/validateSchema';
+import { validateResponseData } from '../utils/validateSchema';
 import { saveSession } from '../utils/storage';
 
 export function useGenerate() {
@@ -14,8 +14,9 @@ export function useGenerate() {
   const requestIdRef = useRef(0);
 
   const generate = useCallback(async () => {
-    if (!notes || notes.trim().length < 30) {
-      setError('Please enter at least 30 characters of notes.');
+    const trimmedNotes = notes.trim();
+    if (!trimmedNotes) {
+      setError('Please enter study notes or an academic topic.');
       return;
     }
 
@@ -38,7 +39,7 @@ export function useGenerate() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ notes: notes.trim() }),
+        body: JSON.stringify({ notes: trimmedNotes }),
         signal: controller.signal,
       });
 
@@ -51,7 +52,8 @@ export function useGenerate() {
         let errMessage = 'Couldn\'t generate study material. Check your connection.';
         try {
           const errData = await response.json();
-          if (errData.error) errMessage = errData.error;
+          if (errData.message) errMessage = errData.message;
+          else if (errData.error) errMessage = errData.error;
         } catch {
           // Use default error
         }
@@ -67,12 +69,21 @@ export function useGenerate() {
         throw new Error('AI returned invalid formatted JSON. Please retry.');
       }
 
-      const validated = validateStudySet(parsedData);
-      
-      // Verify request is still current before setting state
+      const validatedResult = validateResponseData(parsedData);
+
+      // Handle Invalid Input Response from LLM
+      if ('status' in validatedResult && validatedResult.status === 'invalid_input') {
+        if (currentRequestId === requestIdRef.current) {
+          setError(validatedResult.message);
+        }
+        return;
+      }
+
+      // Handle Success StudySet Response
       if (currentRequestId === requestIdRef.current) {
-        setStudySet(validated);
-        saveSession(validated);
+        const validStudySet = validatedResult as StudySet;
+        setStudySet(validStudySet);
+        saveSession(validStudySet);
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
