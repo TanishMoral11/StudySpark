@@ -139,6 +139,17 @@ export const Home: React.FC = () => {
     });
   };
 
+  const handleClearQuizOption = () => {
+    setQuizState((prev) => {
+      const updatedAnswers = [...prev.answers];
+      updatedAnswers[prev.currentQuestion] = {
+        ...updatedAnswers[prev.currentQuestion],
+        selectedOption: null,
+      };
+      return { ...prev, answers: updatedAnswers };
+    });
+  };
+
   const handleSubmitQuizAnswer = () => {
     if (!studySet) return;
     const currentQIndex = quizState.currentQuestion;
@@ -369,6 +380,7 @@ export const Home: React.FC = () => {
                       explanation={studySet.quiz[quizState.currentQuestion].explanation}
                       onSelect={handleSelectQuizOption}
                       onSubmit={handleSubmitQuizAnswer}
+                      onClear={handleClearQuizOption}
                       onNext={handleNextQuizQuestion}
                       isLastQuestion={quizState.currentQuestion + 1 === totalQuizQuestions}
                     />

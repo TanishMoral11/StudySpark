@@ -9,6 +9,7 @@ interface QuizCardProps {
   explanation: string;
   onSelect: (index: number) => void;
   onSubmit: () => void;
+  onClear?: () => void;
   onNext?: () => void;
   isLastQuestion?: boolean;
 }
@@ -22,6 +23,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   explanation,
   onSelect,
   onSubmit,
+  onClear,
   onNext,
   isLastQuestion = false,
 }) => {
@@ -97,33 +99,49 @@ export const QuizCard: React.FC<QuizCardProps> = ({
         </div>
       )}
 
-      {/* Action Button */}
-      <div className="flex justify-end pt-2">
-        {!submitted ? (
-          <button
-            type="button"
-            disabled={selectedOption === null}
-            onClick={onSubmit}
-            className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-              selectedOption === null
-                ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-300 dark:border-slate-700/40'
-                : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30'
-            }`}
-          >
-            Submit Answer
-          </button>
-        ) : (
-          onNext && (
+      {/* Action Bar */}
+      <div className="flex items-center justify-between pt-2">
+        {/* Left Side: Grey Clear Answer Button (only visible when answer is selected and before submission) */}
+        <div>
+          {!submitted && selectedOption !== null && onClear && (
             <button
               type="button"
-              onClick={onNext}
-              className="px-6 py-2.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2"
+              onClick={onClear}
+              className="px-4 py-2.5 rounded-xl font-semibold text-xs md:text-sm transition-all bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 shadow-sm active:scale-95"
             >
-              <span>{isLastQuestion ? 'View Results' : 'Next Question'}</span>
-              <span>→</span>
+              <span>✕ Clear Selection</span>
             </button>
-          )
-        )}
+          )}
+        </div>
+
+        {/* Right Side: Submit / Next Button */}
+        <div>
+          {!submitted ? (
+            <button
+              type="button"
+              disabled={selectedOption === null}
+              onClick={onSubmit}
+              className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all ${
+                selectedOption === null
+                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-300 dark:border-slate-700/40'
+                  : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30'
+              }`}
+            >
+              Submit Answer
+            </button>
+          ) : (
+            onNext && (
+              <button
+                type="button"
+                onClick={onNext}
+                className="px-6 py-2.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2"
+              >
+                <span>{isLastQuestion ? 'View Results' : 'Next Question'}</span>
+                <span>→</span>
+              </button>
+            )
+          )}
+        </div>
       </div>
     </div>
   );
