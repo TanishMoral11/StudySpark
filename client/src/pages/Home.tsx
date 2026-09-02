@@ -23,6 +23,24 @@ export const Home: React.FC = () => {
 
   const [viewMode, setViewMode] = useState<ViewMode>('flashcards');
 
+  // Theme State (Dark / Light)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('studyspark_theme') as 'dark' | 'light') || 'dark';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('studyspark_theme', theme);
+    if (theme === 'light') {
+      document.body.classList.add('light');
+    } else {
+      document.body.classList.remove('light');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
   // Flashcards State
   const [currentCard, setCurrentCard] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -69,6 +87,11 @@ export const Home: React.FC = () => {
   }, [studySet]);
 
   // Flashcard Navigation
+  const goToCard = (index: number) => {
+    setIsFlipped(false);
+    setCurrentCard(index);
+  };
+
   const nextCard = () => {
     if (!studySet) return;
     setIsFlipped(false);
@@ -190,11 +213,25 @@ export const Home: React.FC = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-8 md:py-12">
-      {/* App Header */}
-      <header className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-700/50 text-indigo-300 text-xs font-semibold mb-4 shadow-sm">
+      {/* Top Bar with Theme Toggle */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-700/50 text-indigo-300 text-xs font-semibold shadow-sm">
           <span>⚡ AI Study Assistant</span>
         </div>
+
+        {/* Theme Change Option */}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+          className="px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all bg-slate-900/80 border-slate-700 text-slate-200 hover:bg-slate-800"
+        >
+          <span>{theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
+        </button>
+      </div>
+
+      {/* App Header */}
+      <header className="text-center mb-8">
         <h1 className="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-100 via-indigo-200 to-purple-200 tracking-tight">
           StudySpark
         </h1>
@@ -279,6 +316,25 @@ export const Home: React.FC = () => {
                 label="Flashcard Progress"
               />
 
+              {/* Numbered Tabs Bar for Flashcards (1 | 2 | ... | N) */}
+              <div className="mb-4 flex items-center justify-center flex-wrap gap-1.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                <span className="text-xs text-slate-400 font-medium mr-2">Cards:</span>
+                {studySet.flashcards.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => goToCard(idx)}
+                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center ${
+                      currentCard === idx
+                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md scale-105'
+                        : 'bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/40'
+                    }`}
+                  >
+                    {idx + 1}
+                  </button>
+                ))}
+              </div>
+
               <Flashcard
                 question={studySet.flashcards[currentCard].question}
                 answer={studySet.flashcards[currentCard].answer}
@@ -297,7 +353,7 @@ export const Home: React.FC = () => {
                 </button>
 
                 <span className="text-xs font-semibold text-slate-400">
-                  {currentCard + 1} / {studySet.flashcards.length}
+                  Card {currentCard + 1} of {studySet.flashcards.length}
                 </span>
 
                 <button

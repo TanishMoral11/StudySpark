@@ -45,8 +45,8 @@ Rules:
 - No markdown
 - No code fences
 - No extra text
-- Exactly 6 flashcards
-- Exactly 6 quiz questions
+- Exactly 10 flashcards
+- Exactly 10 quiz questions
 - Exactly 4 options for each quiz question
 - correctIndex must be an integer between 0 and 3
 - Every ID must be unique
