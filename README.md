@@ -44,14 +44,8 @@ Designed with a heavy focus on reliability, error handling, defensive LLM parsin
 # Navigate to project root
 cd StudySpark
 
-# Install root dependencies
+# Install dependencies (automatically installs server & client packages via postinstall)
 npm install
-
-# Install server dependencies
-cd server && npm install
-
-# Install client dependencies
-cd ../client && npm install
 ```
 
 ### 2. Configure Environment Variables
@@ -69,7 +63,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 From the root directory:
 
 ```bash
-npm run dev
+npm start
 ```
 
 This starts:

@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { StudySet } from '../types/study';
-import { extractJSON } from '../utils/parseJSON';
 import { validateResponseData } from '../utils/validateSchema';
 import { saveSession } from '../utils/storage';
 
@@ -29,6 +28,11 @@ export function useGenerate() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
     
+    // Set 30-second timeout for long-running AI calls
+    const timeoutId = setTimeout(() => {
+      controller.abort('timeout');
+    }, 30000);
+
     const currentRequestId = ++requestIdRef.current;
 
     setLoading(true);
@@ -44,6 +48,8 @@ export function useGenerate() {
         body: JSON.stringify({ notes: trimmedNotes }),
         signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       // Ignore stale responses if a newer request was dispatched
       if (currentRequestId !== requestIdRef.current) {
@@ -62,16 +68,8 @@ export function useGenerate() {
         throw new Error(errMessage);
       }
 
-      const rawText = await response.text();
-      
-      let parsedData: unknown;
-      try {
-        parsedData = extractJSON(rawText);
-      } catch {
-        throw new Error('AI returned invalid formatted JSON. Please retry.');
-      }
-
-      const validatedResult = validateResponseData(parsedData);
+      const jsonObject = await response.json();
+      const validatedResult = validateResponseData(jsonObject);
 
       // Handle Invalid Input Response from LLM
       if ('status' in validatedResult && validatedResult.status === 'invalid_input') {
@@ -89,9 +87,17 @@ export function useGenerate() {
         saveSession(validStudySet);
       }
     } catch (err: unknown) {
+      clearTimeout(timeoutId);
+
       if (err instanceof Error) {
-        if (err.name === 'AbortError') {
-          return; // Intentionally aborted, do nothing
+        if (err.name === 'AbortError' || controller.signal.aborted) {
+          if (controller.signal.reason === 'timeout') {
+            if (currentRequestId === requestIdRef.current) {
+              setError('Generation timed out. Please try again.');
+              setStudySet(null);
+            }
+          }
+          return; // Intentionally aborted or timed out
         }
         if (currentRequestId === requestIdRef.current) {
           setError(err.message || 'Couldn\'t generate study material. Check your connection.');

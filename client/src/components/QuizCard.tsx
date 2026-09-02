@@ -36,7 +36,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       </h3>
 
       {/* Options List */}
-      <div className="space-y-3 mb-6">
+      <div role="radiogroup" aria-label="Quiz answer options" className="space-y-3 mb-6">
         {options.map((option, idx) => {
           const isSelected = selectedOption === idx;
           const isThisCorrect = idx === correctIndex;
@@ -59,6 +59,8 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             <button
               key={idx}
               type="button"
+              role="radio"
+              aria-checked={isSelected}
               disabled={submitted}
               onClick={() => onSelect(idx)}
               className={`w-full min-h-[52px] p-4 rounded-xl text-left border transition-all flex items-start gap-3.5 ${btnStyle}`}
