@@ -7,8 +7,28 @@ import { ProgressBar } from '../components/ProgressBar';
 import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { EmptyState } from '../components/EmptyState';
-import type { ViewMode, QuizState, SavedSession } from '../types/study';
+import type { ViewMode, QuizState, SavedSession, QuizQuestion } from '../types/study';
 import { loadSession, deleteSession } from '../utils/storage';
+
+/**
+ * Randomly shuffles the order of quiz questions AND randomly shuffles the 4 options
+ * inside each question while updating correctIndex so correctness is preserved.
+ */
+function shuffleQuizQuestions(questions: QuizQuestion[]): QuizQuestion[] {
+  const shuffledQuestions = [...questions].sort(() => Math.random() - 0.5);
+
+  return shuffledQuestions.map((q) => {
+    const correctAnswerText = q.options[q.correctIndex];
+    const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+    const newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+
+    return {
+      ...q,
+      options: shuffledOptions,
+      correctIndex: newCorrectIndex >= 0 ? newCorrectIndex : 0,
+    };
+  });
+}
 
 export const Home: React.FC = () => {
   const {
@@ -180,23 +200,44 @@ export const Home: React.FC = () => {
     }
   };
 
+  // Retest Incorrect Questions (Jumbles questions & options)
   const handleRetestIncorrect = () => {
     if (!studySet) return;
-    // Local retest algorithm: reset only incorrect questions
     const incorrectIndices = quizState.answers
       .map((ans, idx) => (!ans.isCorrect ? idx : null))
       .filter((val): val is number => val !== null);
 
     if (incorrectIndices.length === 0) return;
 
-    // Filter studySet quiz to incorrect questions
-    const newQuizQuestions = incorrectIndices.map((i) => studySet.quiz[i]);
+    const incorrectQuestions = incorrectIndices.map((i) => studySet.quiz[i]);
+    const jumbledRetest = shuffleQuizQuestions(incorrectQuestions);
 
     setStudySet({
       ...studySet,
-      quiz: newQuizQuestions,
+      quiz: jumbledRetest,
     });
     setRetestMode(true);
+  };
+
+  // Restart Entire Quiz (Jumbles all questions & options so sequence is never repeated)
+  const handleRestartQuiz = () => {
+    if (!studySet) return;
+    const jumbledQuiz = shuffleQuizQuestions(studySet.quiz);
+
+    setStudySet({
+      ...studySet,
+      quiz: jumbledQuiz,
+    });
+
+    setQuizState({
+      answers: jumbledQuiz.map(() => ({
+        selectedOption: null,
+        submitted: false,
+        isCorrect: false,
+      })),
+      currentQuestion: 0,
+      completed: false,
+    });
   };
 
   // Compute quiz score
@@ -414,20 +455,10 @@ export const Home: React.FC = () => {
 
                     <button
                       type="button"
-                      onClick={() => {
-                        setQuizState({
-                          answers: studySet.quiz.map(() => ({
-                            selectedOption: null,
-                            submitted: false,
-                            isCorrect: false,
-                          })),
-                          currentQuestion: 0,
-                          completed: false,
-                        });
-                      }}
-                      className="px-6 py-3 rounded-xl font-semibold text-sm bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition-all"
+                      onClick={handleRestartQuiz}
+                      className="px-6 py-3 rounded-xl font-semibold text-sm bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition-all flex items-center justify-center gap-2"
                     >
-                      Restart Entire Quiz
+                      <span>Restart Quiz</span>
                     </button>
                   </div>
                 </div>
