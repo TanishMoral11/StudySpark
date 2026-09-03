@@ -6,7 +6,13 @@ Designed with a heavy focus on reliability, error handling, defensive LLM parsin
 
 ---
 
-## 🚀 Features
+## 🎥 Screen Recording / Demo
+
+[Watch Screen Recording / Demo Video](link_to_screen_recording_here)
+
+---
+
+## Features
 
 - **Free-form Note Input**: Multi-line notes with real-time character counter and sample prompt chips.
 - **Structured AI Generation**: Powered by **Gemini 2.5 Flash** with Zod runtime schema validation.
@@ -55,7 +61,7 @@ Create a `.env` file inside the `server/` directory:
 ```bash
 # inside server/.env
 PORT=8000
-GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_API_KEY=gemini_api_key
 ```
 
 ### 3. Run Development Server
@@ -69,33 +75,3 @@ npm start
 This starts:
 - Express Backend on `http://localhost:8000`
 - Vite React Frontend on `http://localhost:3000`
-
----
-
-## 🤖 AI Usage Note
-
-> Used ChatGPT and Antigravity AI for planning, component architecture, and debugging. All implementation decisions and final code were understood and verified manually.
-
----
-
-## ⚠️ Known Limitations
-
-- **LLM Output Quality**: Output depends on the quality and clarity of user-provided notes.
-- **Language**: English language prompts optimized.
-- **Text Only**: Does not support image/PDF note uploads.
-- **Non-streaming**: Generates the complete JSON study set before rendering.
-
----
-
-## ⏱️ Time Spent
-
-| Task | Time |
-|---|---|
-| Project Setup & Monorepo Configuration | 0.5h |
-| Design System & UI Components | 2.0h |
-| Express Proxy Backend & Gemini Integration | 1.0h |
-| Robust JSON Extractor & Zod Schema Validation | 1.5h |
-| Interactive Flashcards & Quiz Engine | 1.5h |
-| Retest Logic & Session Persistence | 0.5h |
-| Testing & Bug Fixes | 1.0h |
-| **Total** | **~8 hours** |
