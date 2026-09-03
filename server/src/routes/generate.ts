@@ -1,42 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { generateStudySetRaw } from '../services/gemini';
 import { GenerateResponseSchema } from '../schema/studySchema';
+import { parseJSONFromLLM } from '../utils/jsonExtractor';
 
 export const generateRouter = Router();
-
-function parseJSONFromLLM(raw: string): unknown {
-  const trimmed = raw.trim();
-
-  // Try direct parse
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    // Continue
-  }
-
-  // Strip code fences
-  const codeFenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  if (codeFenceMatch && codeFenceMatch[1]) {
-    try {
-      return JSON.parse(codeFenceMatch[1].trim());
-    } catch {
-      // Continue
-    }
-  }
-
-  // Extract brace range
-  const start = trimmed.indexOf('{');
-  const end = trimmed.lastIndexOf('}');
-  if (start !== -1 && end > start) {
-    try {
-      return JSON.parse(trimmed.substring(start, end + 1));
-    } catch {
-      // Continue
-    }
-  }
-
-  throw new Error('Malformed JSON received from LLM');
-}
 
 generateRouter.post('/', async (req: Request, res: Response): Promise<void> => {
   try {

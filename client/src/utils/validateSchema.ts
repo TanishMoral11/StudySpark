@@ -1,104 +1,55 @@
-import type { StudySet, Flashcard, QuizQuestion, InvalidInputResponse, GenerateAPIResponse } from '../types/study';
+import { z } from 'zod';
+import type { StudySet, GenerateAPIResponse } from '../types/study';
+
+export const FlashcardSchema = z.object({
+  id: z.string().min(1),
+  question: z.string().min(1),
+  answer: z.string().min(1),
+});
+
+export const QuizQuestionSchema = z.object({
+  id: z.string().min(1),
+  question: z.string().min(1),
+  options: z.array(z.string().min(1)).length(4),
+  correctIndex: z.number().int().min(0).max(3),
+  explanation: z.string().min(1),
+});
+
+export const StudySetSchema = z.object({
+  title: z.string().min(1),
+  flashcards: z.array(FlashcardSchema).min(5).max(10),
+  quiz: z.array(QuizQuestionSchema).min(5).max(10),
+});
+
+export const InvalidInputSchema = z.object({
+  status: z.literal('invalid_input'),
+  message: z.string().min(1),
+});
+
+export const GenerateResponseSchema = z.union([
+  StudySetSchema,
+  InvalidInputSchema,
+]);
 
 /**
- * Validates that an arbitrary object conforms to GenerateAPIResponse (StudySet or InvalidInputResponse).
+ * Validates that an arbitrary object conforms to GenerateAPIResponse using Zod.
  */
 export function validateResponseData(data: unknown): GenerateAPIResponse {
-  if (!data || typeof data !== 'object') {
+  const result = GenerateResponseSchema.safeParse(data);
+  if (!result.success) {
+    console.error('Zod Client Validation Error:', result.error.format());
     throw new Error('AI returned invalid data format');
   }
-
-  const obj = data as Record<string, unknown>;
-
-  // Case 1: Invalid input response from backend
-  if (obj.status === 'invalid_input') {
-    if (typeof obj.message !== 'string' || !obj.message.trim()) {
-      throw new Error('Invalid input error message is missing');
-    }
-    return {
-      status: 'invalid_input',
-      message: obj.message.trim(),
-    } as InvalidInputResponse;
-  }
-
-  // Case 2: Standard StudySet response
-  if (typeof obj.title !== 'string' || obj.title.trim().length === 0) {
-    throw new Error('Study set title is missing or empty');
-  }
-
-  if (!Array.isArray(obj.flashcards) || obj.flashcards.length < 5) {
-    throw new Error('Study set must contain at least 5 flashcards');
-  }
-
-  if (!Array.isArray(obj.quiz) || obj.quiz.length < 5) {
-    throw new Error('Study set must contain at least 5 quiz questions');
-  }
-
-  const validatedCards: Flashcard[] = obj.flashcards.map((fc, index) => {
-    if (!fc || typeof fc !== 'object') {
-      throw new Error(`Flashcard ${index + 1} is invalid`);
-    }
-    const card = fc as Record<string, unknown>;
-    if (typeof card.id !== 'string' || typeof card.question !== 'string' || typeof card.answer !== 'string') {
-      throw new Error(`Flashcard ${index + 1} has missing fields`);
-    }
-    if (!card.question.trim() || !card.answer.trim()) {
-      throw new Error(`Flashcard ${index + 1} question or answer is empty`);
-    }
-    return {
-      id: card.id || `fc-${index + 1}`,
-      question: card.question.trim(),
-      answer: card.answer.trim(),
-    };
-  });
-
-  const validatedQuiz: QuizQuestion[] = obj.quiz.map((q, index) => {
-    if (!q || typeof q !== 'object') {
-      throw new Error(`Quiz question ${index + 1} is invalid`);
-    }
-    const item = q as Record<string, unknown>;
-    if (
-      typeof item.id !== 'string' ||
-      typeof item.question !== 'string' ||
-      !Array.isArray(item.options) ||
-      typeof item.correctIndex !== 'number' ||
-      typeof item.explanation !== 'string'
-    ) {
-      throw new Error(`Quiz question ${index + 1} has missing fields`);
-    }
-
-    if (item.options.length !== 4) {
-      throw new Error(`Quiz question ${index + 1} must have exactly 4 options`);
-    }
-
-    if (item.options.some((opt) => typeof opt !== 'string' || !opt.trim())) {
-      throw new Error(`Quiz question ${index + 1} has empty options`);
-    }
-
-    if (item.correctIndex < 0 || item.correctIndex > 3 || !Number.isInteger(item.correctIndex)) {
-      throw new Error(`Quiz question ${index + 1} correctIndex must be between 0 and 3`);
-    }
-
-    return {
-      id: item.id || `q-${index + 1}`,
-      question: item.question.trim(),
-      options: item.options.map((opt: string) => opt.trim()),
-      correctIndex: item.correctIndex,
-      explanation: item.explanation.trim(),
-    };
-  });
-
-  return {
-    title: obj.title.trim(),
-    flashcards: validatedCards,
-    quiz: validatedQuiz,
-  };
+  return result.data as GenerateAPIResponse;
 }
 
+/**
+ * Validates that an arbitrary object conforms to StudySet using Zod.
+ */
 export function validateStudySet(data: unknown): StudySet {
-  const result = validateResponseData(data);
-  if ('status' in result && result.status === 'invalid_input') {
-    throw new Error(result.message);
+  const result = StudySetSchema.safeParse(data);
+  if (!result.success) {
+    throw new Error('Saved session has invalid study set format');
   }
-  return result as StudySet;
+  return result.data as StudySet;
 }

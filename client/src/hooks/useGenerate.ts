@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import type { StudySet } from '../types/study';
 import { validateResponseData } from '../utils/validateSchema';
 import { saveSession } from '../utils/storage';
+import { APP_CONFIG } from '../config/constants';
 
 export function useGenerate() {
   const [notes, setNotes] = useState('');
@@ -31,7 +32,7 @@ export function useGenerate() {
     // Set 30-second timeout for long-running AI calls
     const timeoutId = setTimeout(() => {
       controller.abort('timeout');
-    }, 30000);
+    }, APP_CONFIG.API_TIMEOUT_MS);
 
     const currentRequestId = ++requestIdRef.current;
 

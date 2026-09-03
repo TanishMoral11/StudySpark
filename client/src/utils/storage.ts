@@ -1,7 +1,8 @@
 import type { StudySet, SavedSession } from '../types/study';
 import { validateStudySet } from './validateSchema';
+import { APP_CONFIG } from '../config/constants';
 
-const STORAGE_KEY = 'studyspark_session';
+const STORAGE_KEY = APP_CONFIG.STORAGE_KEYS.SESSION;
 
 export function saveSession(studySet: StudySet): void {
   try {

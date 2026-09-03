@@ -1,34 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useGenerate } from '../hooks/useGenerate';
+import { useTheme } from '../hooks/useTheme';
+import { useFlashcards } from '../hooks/useFlashcards';
+import { useQuiz } from '../hooks/useQuiz';
 import { InputPanel } from '../components/InputPanel';
 import { Flashcard } from '../components/Flashcard';
 import { QuizCard } from '../components/QuizCard';
+import { QuizScoreCard } from '../components/QuizScoreCard';
+import { ResumeSessionModal } from '../components/ResumeSessionModal';
 import { ProgressBar } from '../components/ProgressBar';
 import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { EmptyState } from '../components/EmptyState';
-import type { ViewMode, QuizState, SavedSession, QuizQuestion } from '../types/study';
+import type { ViewMode, SavedSession } from '../types/study';
 import { loadSession, deleteSession } from '../utils/storage';
-
-/**
- * Randomly shuffles the order of quiz questions AND randomly shuffles the 4 options
- * inside each question while updating correctIndex so correctness is preserved.
- */
-function shuffleQuizQuestions(questions: QuizQuestion[]): QuizQuestion[] {
-  const shuffledQuestions = [...questions].sort(() => Math.random() - 0.5);
-
-  return shuffledQuestions.map((q) => {
-    const correctAnswerText = q.options[q.correctIndex];
-    const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
-    const newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
-
-    return {
-      ...q,
-      options: shuffledOptions,
-      correctIndex: newCorrectIndex >= 0 ? newCorrectIndex : 0,
-    };
-  });
-}
 
 export const Home: React.FC = () => {
   const {
@@ -41,47 +26,46 @@ export const Home: React.FC = () => {
     generate,
   } = useGenerate();
 
+  const { theme, toggleTheme } = useTheme();
   const [viewMode, setViewMode] = useState<ViewMode>('flashcards');
 
-  // Theme State (Dark / Light)
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    return (localStorage.getItem('studyspark_theme') as 'dark' | 'light') || 'dark';
-  });
+  // Flashcards Hook
+  const {
+    currentCard,
+    isFlipped,
+    nextCard,
+    prevCard,
+    toggleFlip,
+    resetFlashcards,
+  } = useFlashcards(
+    studySet?.flashcards.length || 0,
+    viewMode === 'flashcards' && !!studySet && !loading
+  );
 
-  useEffect(() => {
-    localStorage.setItem('studyspark_theme', theme);
-    const root = document.documentElement;
-    const body = document.body;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      body.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-      body.classList.remove('dark');
-    }
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
-  };
-
-  // Flashcards State
-  const [currentCard, setCurrentCard] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-
-  // Quiz State
-  const [quizState, setQuizState] = useState<QuizState>({
-    answers: [],
-    currentQuestion: 0,
-    completed: false,
-  });
-
-  // Retest State
-  const [retestMode, setRetestMode] = useState(false);
+  // Quiz Hook
+  const {
+    quizState,
+    retestMode,
+    score,
+    totalQuestions,
+    selectOption,
+    clearOption,
+    submitAnswer,
+    nextQuestion,
+    retestIncorrect,
+    restartQuiz,
+  } = useQuiz(studySet, setStudySet);
 
   // Resume Session Modal State
   const [savedSession, setSavedSession] = useState<SavedSession | null>(null);
   const [showResumeModal, setShowResumeModal] = useState(false);
+
+  // Reset flashcards when studySet changes
+  useEffect(() => {
+    if (studySet) {
+      resetFlashcards();
+    }
+  }, [studySet, resetFlashcards]);
 
   // Check for saved session on mount
   useEffect(() => {
@@ -91,158 +75,6 @@ export const Home: React.FC = () => {
       setShowResumeModal(true);
     }
   }, []);
-
-  // Sync quizState whenever studySet changes
-  useEffect(() => {
-    if (studySet) {
-      setQuizState({
-        answers: studySet.quiz.map(() => ({
-          selectedOption: null,
-          submitted: false,
-          isCorrect: false,
-        })),
-        currentQuestion: 0,
-        completed: false,
-      });
-      setCurrentCard(0);
-      setIsFlipped(false);
-      setRetestMode(false);
-    }
-  }, [studySet]);
-
-  // Flashcard Navigation
-  const nextCard = () => {
-    if (!studySet) return;
-    setIsFlipped(false);
-    setCurrentCard((prev) => (prev + 1) % studySet.flashcards.length);
-  };
-
-  const prevCard = () => {
-    if (!studySet) return;
-    setIsFlipped(false);
-    setCurrentCard((prev) => (prev - 1 + studySet.flashcards.length) % studySet.flashcards.length);
-  };
-
-  // Global Keyboard Shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept keyboard shortcuts if focus is inside input/textarea
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
-        return;
-      }
-
-      if (studySet && !loading) {
-        if (viewMode === 'flashcards') {
-          if (e.key === 'ArrowRight') nextCard();
-          if (e.key === 'ArrowLeft') prevCard();
-          if (e.key === ' ') {
-            e.preventDefault();
-            setIsFlipped((prev) => !prev);
-          }
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [studySet, loading, viewMode, currentCard]);
-
-  // Quiz Interaction Handlers
-  const handleSelectQuizOption = (optionIndex: number) => {
-    setQuizState((prev) => {
-      const updatedAnswers = [...prev.answers];
-      updatedAnswers[prev.currentQuestion] = {
-        ...updatedAnswers[prev.currentQuestion],
-        selectedOption: optionIndex,
-      };
-      return { ...prev, answers: updatedAnswers };
-    });
-  };
-
-  const handleClearQuizOption = () => {
-    setQuizState((prev) => {
-      const updatedAnswers = [...prev.answers];
-      updatedAnswers[prev.currentQuestion] = {
-        ...updatedAnswers[prev.currentQuestion],
-        selectedOption: null,
-      };
-      return { ...prev, answers: updatedAnswers };
-    });
-  };
-
-  const handleSubmitQuizAnswer = () => {
-    if (!studySet) return;
-    const currentQIndex = quizState.currentQuestion;
-    const currentAns = quizState.answers[currentQIndex];
-
-    if (currentAns.selectedOption === null) return;
-
-    const correctIndex = studySet.quiz[currentQIndex].correctIndex;
-    const isCorrect = currentAns.selectedOption === correctIndex;
-
-    setQuizState((prev) => {
-      const updatedAnswers = [...prev.answers];
-      updatedAnswers[currentQIndex] = {
-        ...updatedAnswers[currentQIndex],
-        submitted: true,
-        isCorrect,
-      };
-      return { ...prev, answers: updatedAnswers };
-    });
-  };
-
-  const handleNextQuizQuestion = () => {
-    if (!studySet) return;
-    if (quizState.currentQuestion + 1 >= studySet.quiz.length) {
-      setQuizState((prev) => ({ ...prev, completed: true }));
-    } else {
-      setQuizState((prev) => ({ ...prev, currentQuestion: prev.currentQuestion + 1 }));
-    }
-  };
-
-  // Retest Incorrect Questions (Jumbles questions & options)
-  const handleRetestIncorrect = () => {
-    if (!studySet) return;
-    const incorrectIndices = quizState.answers
-      .map((ans, idx) => (!ans.isCorrect ? idx : null))
-      .filter((val): val is number => val !== null);
-
-    if (incorrectIndices.length === 0) return;
-
-    const incorrectQuestions = incorrectIndices.map((i) => studySet.quiz[i]);
-    const jumbledRetest = shuffleQuizQuestions(incorrectQuestions);
-
-    setStudySet({
-      ...studySet,
-      quiz: jumbledRetest,
-    });
-    setRetestMode(true);
-  };
-
-  // Restart Entire Quiz (Jumbles all questions & options so sequence is never repeated)
-  const handleRestartQuiz = () => {
-    if (!studySet) return;
-    const jumbledQuiz = shuffleQuizQuestions(studySet.quiz);
-
-    setStudySet({
-      ...studySet,
-      quiz: jumbledQuiz,
-    });
-
-    setQuizState({
-      answers: jumbledQuiz.map(() => ({
-        selectedOption: null,
-        submitted: false,
-        isCorrect: false,
-      })),
-      currentQuestion: 0,
-      completed: false,
-    });
-  };
-
-  // Compute quiz score
-  const score = quizState.answers.filter((a) => a.isCorrect).length;
-  const totalQuizQuestions = studySet?.quiz.length || 0;
 
   // Session resume handlers
   const handleResumeSession = () => {
@@ -270,7 +102,6 @@ export const Home: React.FC = () => {
           <span>⚡ AI Study Assistant</span>
         </div>
 
-        {/* Icon-Only Theme Toggle Button */}
         <button
           type="button"
           onClick={toggleTheme}
@@ -372,7 +203,7 @@ export const Home: React.FC = () => {
                 question={studySet.flashcards[currentCard].question}
                 answer={studySet.flashcards[currentCard].answer}
                 isFlipped={isFlipped}
-                onFlip={() => setIsFlipped((prev) => !prev)}
+                onFlip={toggleFlip}
               />
 
               {/* Navigation Controls */}
@@ -407,7 +238,7 @@ export const Home: React.FC = () => {
                 <>
                   <ProgressBar
                     current={quizState.currentQuestion + 1}
-                    total={totalQuizQuestions}
+                    total={totalQuestions}
                     label="Quiz Progress"
                   />
 
@@ -419,49 +250,21 @@ export const Home: React.FC = () => {
                       submitted={quizState.answers[quizState.currentQuestion].submitted}
                       correctIndex={studySet.quiz[quizState.currentQuestion].correctIndex}
                       explanation={studySet.quiz[quizState.currentQuestion].explanation}
-                      onSelect={handleSelectQuizOption}
-                      onSubmit={handleSubmitQuizAnswer}
-                      onClear={handleClearQuizOption}
-                      onNext={handleNextQuizQuestion}
-                      isLastQuestion={quizState.currentQuestion + 1 === totalQuizQuestions}
+                      onSelect={selectOption}
+                      onSubmit={submitAnswer}
+                      onClear={clearOption}
+                      onNext={nextQuestion}
+                      isLastQuestion={quizState.currentQuestion + 1 === totalQuestions}
                     />
                   )}
                 </>
               ) : (
-                /* Quiz Complete Score Card */
-                <div className="glass-card rounded-2xl p-8 md:p-12 text-center shadow-2xl">
-                  <div className="w-20 h-20 bg-indigo-500/10 border border-indigo-500/30 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
-                    🏆
-                  </div>
-
-                  <h3 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                    Quiz Complete!
-                  </h3>
-
-                  <p className="text-lg font-semibold text-indigo-700 dark:text-indigo-300 mb-6">
-                    {score} / {totalQuizQuestions} Correct ({Math.round((score / totalQuizQuestions) * 100)}%)
-                  </p>
-
-                  <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-md mx-auto">
-                    {score < totalQuizQuestions && (
-                      <button
-                        type="button"
-                        onClick={handleRetestIncorrect}
-                        className="px-6 py-3 rounded-xl font-semibold text-sm bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg transition-all"
-                      >
-                        🔄 Retest Incorrect Questions ({totalQuizQuestions - score})
-                      </button>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={handleRestartQuiz}
-                      className="px-6 py-3 rounded-xl font-semibold text-sm bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition-all flex items-center justify-center gap-2"
-                    >
-                      <span>Restart Quiz</span>
-                    </button>
-                  </div>
-                </div>
+                <QuizScoreCard
+                  score={score}
+                  totalQuestions={totalQuestions}
+                  onRetestIncorrect={retestIncorrect}
+                  onRestartQuiz={restartQuiz}
+                />
               )}
             </div>
           )}
@@ -470,36 +273,11 @@ export const Home: React.FC = () => {
 
       {/* Resume Previous Session Modal */}
       {showResumeModal && savedSession && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-card rounded-2xl p-6 md:p-8 max-w-md w-full border border-indigo-500/30 shadow-2xl animate-fadeIn">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-2">
-              <span>📂</span> Resume Previous Session?
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300 mb-1">
-              You have a saved study session:
-            </p>
-            <p className="text-base font-semibold text-indigo-700 dark:text-indigo-300 mb-4 bg-indigo-50 dark:bg-indigo-950/40 p-3 rounded-xl border border-indigo-200 dark:border-indigo-800/40">
-              "{savedSession.title}"
-            </p>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleResumeSession}
-                className="flex-1 py-2.5 px-4 rounded-xl font-semibold text-xs md:text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-md"
-              >
-                Resume Session
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteSession}
-                className="py-2.5 px-4 rounded-xl font-semibold text-xs md:text-sm bg-slate-200 dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-950/60 text-slate-700 dark:text-slate-400 hover:text-rose-700 dark:hover:text-rose-300 border border-slate-300 dark:border-slate-700 transition-all"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
+        <ResumeSessionModal
+          session={savedSession}
+          onResume={handleResumeSession}
+          onDelete={handleDeleteSession}
+        />
       )}
     </div>
   );

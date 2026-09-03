@@ -1,4 +1,5 @@
 import React from 'react';
+import { APP_CONFIG } from '../config/constants';
 
 interface InputPanelProps {
   notes: string;
@@ -7,7 +8,7 @@ interface InputPanelProps {
   loading: boolean;
 }
 
-const MAX_CHARS = 25000;
+const MAX_CHARS = APP_CONFIG.MAX_INPUT_CHARS;
 
 const EXAMPLE_PROMPTS = [
   "DBMS",
