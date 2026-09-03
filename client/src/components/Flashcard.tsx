@@ -7,6 +7,12 @@ interface FlashcardProps {
   onFlip: () => void;
 }
 
+/**
+ * Flashcard Component
+ * Renders an interactive 3D flip card with question front and detailed answer back.
+ * Features CSS 3D perspective transforms (`rotate-y-180`, `backface-hidden`), click to flip,
+ * keyboard accessibility (`Space`/`Enter`), and ARIA screen reader attributes.
+ */
 export const Flashcard: React.FC<FlashcardProps> = ({
   question,
   answer,

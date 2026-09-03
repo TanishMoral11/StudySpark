@@ -7,6 +7,12 @@ interface ResumeSessionModalProps {
   onDelete: () => void;
 }
 
+/**
+ * ResumeSessionModal Component
+ * Renders a backdrop-blurred modal dialog on initial application load if a valid study session
+ * exists in browser localStorage.
+ * Gives the user the choice to resume the previous study session or clear storage and start fresh.
+ */
 export const ResumeSessionModal: React.FC<ResumeSessionModalProps> = ({
   session,
   onResume,

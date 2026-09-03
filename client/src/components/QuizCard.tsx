@@ -14,6 +14,12 @@ interface QuizCardProps {
   isLastQuestion?: boolean;
 }
 
+/**
+ * QuizCard Component
+ * Renders an interactive 4-option multiple choice question card.
+ * Handles option selection, option clearing (via grey Clear Selection button), answer submission,
+ * instant correctness feedback (✓/✕ badge and explanation banner), and ARIA radiogroup accessibility.
+ */
 export const QuizCard: React.FC<QuizCardProps> = ({
   question,
   options,

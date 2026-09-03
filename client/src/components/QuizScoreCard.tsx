@@ -7,6 +7,12 @@ interface QuizScoreCardProps {
   onRestartQuiz: () => void;
 }
 
+/**
+ * QuizScoreCard Component
+ * Displays the final score and accuracy percentage upon completing a quiz.
+ * Renders contextual action buttons: "Retest Incorrect Questions" (if any questions were missed)
+ * and "Restart Quiz" (which jumbles and shuffles question and option order).
+ */
 export const QuizScoreCard: React.FC<QuizScoreCardProps> = ({
   score,
   totalQuestions,

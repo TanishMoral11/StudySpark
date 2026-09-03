@@ -17,6 +17,12 @@ const EXAMPLE_PROMPTS = [
   "Photosynthesis & Plant Biology",
 ];
 
+/**
+ * InputPanel Component
+ * Main text entry panel accepting free-form study notes or academic topics.
+ * Features 25,000 character validation limit (`X / 25,000`), real-time counter, limit exceeded warning,
+ * quick-fill example topic chips, Ctrl+Enter keyboard trigger, and disabled button states during generation.
+ */
 export const InputPanel: React.FC<InputPanelProps> = ({
   notes,
   onNotesChange,

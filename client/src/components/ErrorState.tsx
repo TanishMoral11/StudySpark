@@ -6,6 +6,11 @@ interface ErrorStateProps {
   onRetry: () => void;
 }
 
+/**
+ * ErrorState Component
+ * Displays a non-intrusive, accessible error alert banner when API generation, parsing, or network calls fail.
+ * Provides a clear explanation message and a single-click "Try Again" retry trigger.
+ */
 export const ErrorState: React.FC<ErrorStateProps> = ({
   title = "Couldn't generate study material",
   message,

@@ -1,5 +1,10 @@
 import React from 'react';
 
+/**
+ * EmptyState Component
+ * Displays an engaging feature showcase hero card when no study set has been generated yet.
+ * Welcomes the user and highlights key application capabilities (Flashcards, Quizzes, Smart Retesting).
+ */
 export const EmptyState: React.FC = () => {
   return (
     <div className="w-full glass-card rounded-2xl p-8 md:p-12 text-center border border-slate-200 dark:border-slate-800/80 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900/60 dark:to-slate-950/80 shadow-xl my-6">

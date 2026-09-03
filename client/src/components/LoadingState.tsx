@@ -1,5 +1,10 @@
 import React from 'react';
 
+/**
+ * LoadingState Component
+ * Displays a smooth pulse skeleton UI placeholder while Gemini AI generates flashcards and quiz questions.
+ * Ensures the interface remains responsive without freezing during asynchronous network requests.
+ */
 export const LoadingState: React.FC = () => {
   return (
     <div className="w-full glass-card rounded-2xl p-6 md:p-8 animate-pulse border border-slate-200 dark:border-slate-800 space-y-6">

@@ -6,6 +6,11 @@ interface ProgressBarProps {
   label?: string;
 }
 
+/**
+ * ProgressBar Component
+ * Renders an animated progress bar indicating current step completion (e.g. Flashcard 3 of 10 or Quiz Question 4 of 10).
+ * Displays numerical counters, percentages, and smooth CSS width transitions.
+ */
 export const ProgressBar: React.FC<ProgressBarProps> = ({
   current,
   total,
