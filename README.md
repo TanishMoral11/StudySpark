@@ -8,7 +8,7 @@ Designed with a heavy focus on reliability, error handling, defensive LLM parsin
 
 ## 🎥 Screen Recording / Demo
 
-[Watch Screen Recording / Demo Video](link_to_screen_recording_here)
+[Watch Screen Recording / Demo Video](https://github.com/user-attachments/assets/f16c3686-2a20-4064-acd3-0e5281afd20c)
 
 ---
 
